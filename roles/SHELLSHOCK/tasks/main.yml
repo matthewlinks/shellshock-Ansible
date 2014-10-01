@@ -1,0 +1,43 @@
+# Ansible playbook for fixing SHELLSHOCK on OSX
+
+# CHECK the version of BASH for susceptibility to CVE-2014-6271
+# example: env x='() { :;}; echo vulnerable' /bin/bash -c 'echo hello'
+ - name: Test for SHELLSHOCK CVE-2014-6271
+   script: CVE-2014-6271.sh
+   register: CVE_2014_6271
+   changed_when: '"vulnerable" in CVE_2014_6271.stdout'
+   notify: 
+    - refresh bash source
+    - patch
+
+# CHECK the version of BASH for susceptibility to CVE-2014-7169
+# example: rm -f echo; env X='() { (a)=>\' sh -c "echo date"; cat echo
+ - name: Test for SHELLSHOCK CVE-2014-7169
+   script: CVE-2014-7169.sh
+   ignore_errors: yes
+   register: CVE_2014_7169
+   changed_when: '"date" not in CVE_2014_7169.stdout_lines'
+   notify:
+    - refresh bash source
+    - patch
+
+# CHECK the version of BASH for susceptibility to "GAME OVER"
+# example: env ls="() { echo 'GAM OVER'; }" bash -c ls
+ - name: Test for SHELLSHOCK GAME OVER
+   script: GAME-OVER.sh
+   register: GAME_OVER
+   changed_when: '"GAME OVER" in GAME_OVER.stdout'
+   notify:
+    - refresh bash source
+    - patch
+
+# CHECK the version of BASH for susceptibility to "GAME OVER" if patched with Apple
+# example: env '__BASH_FUNC<ls>()'="() { echo GAME OVER; }" /bin/bash -c ls
+ - name: Test for SHELLSHOCK GAME OVER for Apple
+   script: GAME-OVER-APPLE.sh
+   register: GAME_OVER_APPLE
+   changed_when: '"GAME OVER" in GAME_OVER_APPLE.stdout'
+   notify:
+    - refresh bash source
+    - patch
+

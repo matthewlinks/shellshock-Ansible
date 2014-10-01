@@ -1,0 +1,28 @@
+# Ansible playbook for fixing SHELLSHOCK on OSX
+
+# make sure there is no version of the source in the way
+ - name: refresh bash source
+   command: rm -rf BASH-COMPILE
+   notify: download bash source
+ 
+# make a directory for the source, curl it, and unpack it  
+ - name: download bash source
+   script: download-bash-source.sh
+
+# grab the relevant patches
+# current list: bash32-052, bash32-053, bash32-054
+ - name: patch
+   script: patch.sh
+   notify: build bash
+
+# build everything
+ - name: build bash
+   script: build.sh
+   notify: swap versions
+
+# swap the versions out
+# this is the ONLY time we should need Admin priviledges
+ - name: swap versions
+   script: swap-versions.sh
+   sudo: true
+
